@@ -13,6 +13,7 @@
             background-color: #f7f7f7;
             color: #333;
         }
+
         .container {
             max-width: 450px;
             margin: 0 auto;
@@ -21,12 +22,15 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
+
+        /* 헤더 스타일 */
         h1 {
             font-size: 1.5em;
             color: #007bff;
             text-align: center;
             margin-bottom: 10px;
         }
+
         .subtitle {
             text-align: center;
             font-size: 0.9em;
@@ -35,9 +39,12 @@
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
+
+        /* 폼 요소 스타일 */
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             margin-bottom: 8px;
@@ -45,6 +52,7 @@
             color: #444;
             font-size: 0.95em;
         }
+
         input[type="text"],
         input[type="tel"] {
             width: 100%;
@@ -54,6 +62,7 @@
             box-sizing: border-box;
             font-size: 1em;
         }
+
         /* 개인정보 동의 스타일 */
         .privacy-group {
             padding: 15px;
@@ -64,23 +73,26 @@
             font-size: 0.9em;
             color: #856404;
         }
-        /* ⭐️ 새로운 단답형 동의 필드 스타일 */
+
         .simple-consent-input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #28a745; /* 동의 강조 */
+            border: 1px solid #28a745; 
             background-color: #e2f9e6;
             border-radius: 5px;
             text-align: center;
             font-weight: bold;
             color: #1a7c36;
         }
+
         .privacy-checkbox-label {
              display: flex;
              align-items: center;
              margin-top: 10px;
              font-weight: normal;
         }
+
+        /* 제출 버튼 */
         button[type="submit"] {
             width: 100%;
             padding: 15px;
@@ -92,6 +104,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         button[type="submit"]:hover {
             background-color: #218838;
         }
@@ -102,9 +115,7 @@
         <h1>서울 개인택시 면허 양수도 상담예약</h1>
         <p class="subtitle">상담예약을 주시면 근무일에 우선 연락드립니다.</p>
 
-        <form id="reservationForm" method="POST" 
-              action="https://docs.google.com/forms/d/e/1FAIpQLSexxfk_PF8HmE9I4iOHDCt6vYWPYudnw4fMQiWXJHiPGYrVLg/formResponse"
-              target="hidden_iframe">
+        <form id="reservationForm">
 
             <div class="form-group">
                 <label for="userName">이름</label>
@@ -143,17 +154,15 @@
         </form>
     </div>
 
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const reservationForm = document.getElementById('reservationForm');
-            const hiddenIframe = document.getElementById('hidden_iframe');
             const privacyAgreeCheck = document.getElementById('privacyAgreeCheck');
             const privacyAgreeText = document.getElementById('privacyAgreeText');
             
-            let submitted = false;
-
+            // ⭐️ 구글 폼 제출 URL (POST 요청에 사용)
+            const formURL = 'https://docs.google.com/forms/d/e/1FAIpQLSexxfk_PF8HmE9I4iOHDCt6vYWPYudnw4fMQiWXJHiPGYrVLg/formResponse';
+            
             // ⭐️ 동의 체크 시 단답형 필드 값 자동 변경
             privacyAgreeCheck.addEventListener('change', function() {
                 if (this.checked) {
@@ -165,25 +174,43 @@
                 }
             });
 
-            // 폼 제출 이벤트 처리
-            reservationForm.addEventListener('submit', function() {
-                submitted = true;
-            });
+            // ⭐️ AJAX 제출 함수
+            reservationForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // 기본 폼 제출 동작(페이지 이동) 방지
 
-            // iframe 로드 이벤트 (응답 도착 시) 처리
-            hiddenIframe.onload = function() {
-                if(submitted) {
+                // 폼 데이터를 URLSearchParams 객체로 변환 (fetch 함수를 위해 필요)
+                const formData = new FormData(reservationForm);
+                const payload = new URLSearchParams(formData);
+
+                // 버튼 비활성화 (중복 제출 방지 및 피드백)
+                const submitButton = reservationForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = '처리 중...';
+
+                // Fetch API를 이용해 비동기적으로 데이터 전송
+                fetch(formURL, {
+                    method: 'POST',
+                    body: payload,
+                    mode: 'no-cors' // CORS 정책 우회 (구글 폼 연동 시 필수)
+                })
+                .then(response => {
+                    // response.ok를 직접 확인하지 않고, 응답이 성공적으로 도착했다는 가정 하에 처리 (mode: 'no-cors' 때문에)
                     alert('✅ 상담 예약이 성공적으로 접수되었습니다. 근무일에 우선 연락드립니다.');
-                    
-                    // 폼 초기화 (체크박스 및 텍스트 필드 포함)
-                    reservationForm.reset(); 
-                    submitted = false;
-                    
-                    // 폼 리셋 후 단답형 텍스트 필드 상태 초기화
+                })
+                .catch(error => {
+                    // 네트워크 오류 등 발생 시 사용자에게 알림
+                    console.error('Submission Error:', error);
+                    alert('⚠️ 네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+                })
+                .finally(() => {
+                    // 완료 후 폼 초기화 및 버튼 활성화
+                    reservationForm.reset();
                     privacyAgreeText.value = "";
                     privacyAgreeText.placeholder = "체크하시면 '동의함'이 자동으로 입력됩니다.";
-                }
-            };
+                    submitButton.disabled = false;
+                    submitButton.textContent = '상담 예약 신청';
+                });
+            });
         });
     </script>
 </body>

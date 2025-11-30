@@ -13,7 +13,6 @@
             background-color: #f7f7f7;
             color: #333;
         }
-
         .container {
             max-width: 450px;
             margin: 0 auto;
@@ -22,15 +21,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-
-        /* 헤더 스타일 */
         h1 {
             font-size: 1.5em;
             color: #007bff;
             text-align: center;
             margin-bottom: 10px;
         }
-
         .subtitle {
             text-align: center;
             font-size: 0.9em;
@@ -39,12 +35,9 @@
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
-
-        /* 폼 요소 스타일 */
         .form-group {
             margin-bottom: 20px;
         }
-
         label {
             display: block;
             margin-bottom: 8px;
@@ -52,7 +45,6 @@
             color: #444;
             font-size: 0.95em;
         }
-
         input[type="text"],
         input[type="tel"] {
             width: 100%;
@@ -62,7 +54,6 @@
             box-sizing: border-box;
             font-size: 1em;
         }
-
         /* 개인정보 동의 스타일 */
         .privacy-group {
             padding: 15px;
@@ -73,14 +64,23 @@
             font-size: 0.9em;
             color: #856404;
         }
-
-        .privacy-checkbox {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
+        /* ⭐️ 새로운 단답형 동의 필드 스타일 */
+        .simple-consent-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #28a745; /* 동의 강조 */
+            background-color: #e2f9e6;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            color: #1a7c36;
         }
-
-        /* 제출 버튼 */
+        .privacy-checkbox-label {
+             display: flex;
+             align-items: center;
+             margin-top: 10px;
+             font-weight: normal;
+        }
         button[type="submit"] {
             width: 100%;
             padding: 15px;
@@ -92,7 +92,6 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
         button[type="submit"]:hover {
             background-color: #218838;
         }
@@ -104,7 +103,7 @@
         <p class="subtitle">상담예약을 주시면 근무일에 우선 연락드립니다.</p>
 
         <form id="reservationForm" method="POST" 
-              action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSexxfk_PF8HmE9I4iOHDCt6vYWPYudnw4fMQiWXJHiPGYrVLg/formResponse"
+              action="https://docs.google.com/forms/d/e/1FAIpQLSexxfk_PF8HmE9I4iOHDCt6vYWPYudnw4fMQiWXJHiPGYrVLg/formResponse"
               target="hidden_iframe">
 
             <div class="form-group">
@@ -124,12 +123,19 @@
 
             <div class="form-group privacy-group">
                 <p>개인정보 수집 및 이용 목적: 상담 예약 및 진행을 위한 연락</p>
-                <div class="privacy-checkbox">
-                    <input type="hidden" name="entry.603333137" value="아니오">
-                    
-                    <input type="checkbox" id="privacyAgree" name="entry.603333137" value="예" required style="margin-right: 8px;">
-                    <label for="privacyAgree">개인정보 수집 및 이용에 동의합니다.</label>
-                </div>
+                
+                <label for="privacyAgreeCheck" class="privacy-checkbox-label">
+                    <input type="checkbox" id="privacyAgreeCheck" required style="margin-right: 8px;">
+                    개인정보 수집 및 이용에 동의합니다.
+                </label>
+                
+                <input type="text" id="privacyAgreeText" 
+                       name="entry.603333137" 
+                       value="" 
+                       readonly 
+                       class="simple-consent-input" 
+                       required
+                       placeholder="체크하시면 '동의함'이 자동으로 입력됩니다.">
             </div>
 
             <button type="submit">상담 예약 신청</button>
@@ -143,8 +149,21 @@
         document.addEventListener('DOMContentLoaded', function() {
             const reservationForm = document.getElementById('reservationForm');
             const hiddenIframe = document.getElementById('hidden_iframe');
+            const privacyAgreeCheck = document.getElementById('privacyAgreeCheck');
+            const privacyAgreeText = document.getElementById('privacyAgreeText');
             
             let submitted = false;
+
+            // ⭐️ 동의 체크 시 단답형 필드 값 자동 변경
+            privacyAgreeCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    privacyAgreeText.value = "동의함";
+                    privacyAgreeText.placeholder = "동의함";
+                } else {
+                    privacyAgreeText.value = "";
+                    privacyAgreeText.placeholder = "체크하시면 '동의함'이 자동으로 입력됩니다.";
+                }
+            });
 
             // 폼 제출 이벤트 처리
             reservationForm.addEventListener('submit', function() {
@@ -156,9 +175,13 @@
                 if(submitted) {
                     alert('✅ 상담 예약이 성공적으로 접수되었습니다. 근무일에 우선 연락드립니다.');
                     
-                    // 폼 초기화
+                    // 폼 초기화 (체크박스 및 텍스트 필드 포함)
                     reservationForm.reset(); 
                     submitted = false;
+                    
+                    // 폼 리셋 후 단답형 텍스트 필드 상태 초기화
+                    privacyAgreeText.value = "";
+                    privacyAgreeText.placeholder = "체크하시면 '동의함'이 자동으로 입력됩니다.";
                 }
             };
         });

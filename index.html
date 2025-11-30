@@ -15,7 +15,7 @@
         }
 
         .container {
-            max-width: 450px; /* 모바일 크기 제한 */
+            max-width: 450px;
             margin: 0 auto;
             background-color: #ffffff;
             padding: 25px;
@@ -78,6 +78,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 0.9em;
+            user-select: none; /* 텍스트 선택 방지 */
         }
 
         .radio-btn.selected {
@@ -137,7 +138,9 @@
         <h1>서울 개인택시 면허 양수도 상담예약</h1>
         <p class="subtitle">상담예약을 주시면 근무일에 우선 연락드립니다.</p>
 
-        <form id="reservationForm" method="POST" action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSdyBUyfshKPMPHLJYFlJ8V_ZVTDofr4Aniwp9ifVuGBPe_Xvw/formResponse">
+        <form id="reservationForm" method="POST" 
+              action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSdyBUyfshKPMPHLJYFlJ8V_ZVTDofr4Aniwp9ifVuGBPe_Xvw/formResponse"
+              target="hidden_iframe">
 
             <div class="form-group">
                 <label>상담 구분</label>
@@ -181,35 +184,41 @@
         </form>
     </div>
 
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
     <script>
-        // 자바스크립트 코드: 상담 구분에 따른 차량번호 필드 조건부 활성화
         document.addEventListener('DOMContentLoaded', function() {
+            const reservationForm = document.getElementById('reservationForm');
             const sellerOption = document.getElementById('sellerOption');
             const buyerOption = document.getElementById('buyerOption');
             const sellerBtn = document.getElementById('sellerBtn');
             const buyerBtn = document.getElementById('buyerBtn');
             const carNumberGroup = document.getElementById('carNumberGroup');
             const carNumberInput = document.getElementById('carNumber');
+            const hiddenIframe = document.getElementById('hidden_iframe');
+            
+            let submitted = false; // 제출 상태 추적 변수
 
+            // 1. 상담 구분에 따른 차량번호 필드 활성화/비활성화 로직
             function updateSelection() {
                 // 면허판매(조합원) 선택 시
                 if (sellerOption.checked) {
                     carNumberGroup.style.display = 'block';
-                    carNumberInput.setAttribute('required', 'required');
+                    carNumberInput.setAttribute('required', 'required'); // 필수 입력 설정
                     sellerBtn.classList.add('selected');
                     buyerBtn.classList.remove('selected');
                 } 
                 // 면허구매(양수희망자) 선택 시
                 else {
                     carNumberGroup.style.display = 'none';
-                    carNumberInput.removeAttribute('required');
-                    // 입력된 차량번호 값이 있다면 초기화 (데이터 오류 방지)
-                    carNumberInput.value = ''; 
+                    carNumberInput.removeAttribute('required'); // 필수 입력 해제
+                    carNumberInput.value = ''; // 필드 숨김과 동시에 값 초기화
                     sellerBtn.classList.remove('selected');
                     buyerBtn.classList.add('selected');
                 }
             }
 
+            // 라디오 버튼 레이블 클릭 이벤트
             sellerBtn.addEventListener('click', function() {
                 sellerOption.checked = true;
                 updateSelection();
@@ -220,8 +229,29 @@
                 updateSelection();
             });
 
-            // 초기 로드 시 실행 (기본값은 면허사기(양수자)로 설정되어 있습니다.)
+            // 초기 로드 시 실행 (기본값 설정)
             updateSelection();
+            
+            // 2. 폼 제출 이벤트 처리
+            reservationForm.addEventListener('submit', function() {
+                submitted = true; // 폼 제출 시작
+            });
+
+            // 3. iframe 로드 이벤트 (구글 폼 응답 도착 시) 처리
+            hiddenIframe.onload = function() {
+                if(submitted) {
+                    // 사용자에게 성공 메시지 표시
+                    alert('✅ 상담 예약이 성공적으로 접수되었습니다. 근무일에 우선 연락드립니다.');
+                    
+                    // 폼 초기화 및 상태 정리
+                    reservationForm.reset(); 
+                    submitted = false;
+                    
+                    // 폼 초기화 후, 버튼 상태 및 차량번호 필드를 기본값으로 다시 설정
+                    buyerOption.checked = true;
+                    updateSelection();
+                }
+            };
         });
     </script>
 </body>

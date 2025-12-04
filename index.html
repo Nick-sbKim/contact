@@ -724,8 +724,8 @@
             }
             
             // 상담 구분을 hidden 필드에 설정
-            const typeText = currentConsultationType === 'selling' ? '면허판매(조합원)' : '면허구매(신규양수자)';
-            document.getElementById('consultation_type').value = typeText;
+            const typeText = currentConsultationType === 'selling' ? '면허 판매상담(조합원)' : '면허 구매상담(양수희망자)';
+            document.getElementById('consultation_type').value = typeText; // ⭐ 수정: 변경된 레이블 텍스트 사용 ⭐
             
             // 2단계 레이아웃 업데이트
             updateStep2Layout(currentConsultationType);
@@ -742,18 +742,25 @@
             const completionPeriod = document.getElementById('completion-period');
             const expectedPeriod = document.getElementById('expected-period');
 
-            // 모든 조건부 필드 숨김 및 required 해제
+            // 모든 조건부 필드 숨김 및 name/required/disabled 처리
+            
+            // 1. 초기 상태: 모두 숨김/비활성화
             completionGroup.style.display = 'none';
             expectedGroup.style.display = 'none';
+            
             completionPeriod.removeAttribute('required');
+            completionPeriod.setAttribute('disabled', 'disabled'); // ⭐ 개선: 비활성화 ⭐
             expectedPeriod.removeAttribute('required');
+            expectedPeriod.setAttribute('disabled', 'disabled'); // ⭐ 개선: 비활성화 ⭐
 
             if (status === '교육수료 완료') {
                 completionGroup.style.display = 'block';
                 completionPeriod.setAttribute('required', 'required');
+                completionPeriod.removeAttribute('disabled'); // ⭐ 개선: 활성화 ⭐
             } else if (status === '추첨 당첨 후 교육대기') {
                 expectedGroup.style.display = 'block';
                 expectedPeriod.setAttribute('required', 'required');
+                expectedPeriod.removeAttribute('disabled'); // ⭐ 개선: 활성화 ⭐
             }
         }
 
@@ -840,6 +847,7 @@
                     return false;
                 }
                 document.getElementById('car_number_full').value = `서울${num2}${hangul}${num4}`;
+                
                 // 구매 전용 필드는 초기화하여 전송하지 않음
                 document.getElementById('region_major_hidden').value = '';
                 document.getElementById('region_sub_hidden').value = '';

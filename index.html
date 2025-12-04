@@ -120,6 +120,23 @@
             padding-right: 40px;
         }
 
+        /* ⭐ 수정: 플레이스홀더 텍스트 일관성 확보 ⭐ */
+        /* NanumSquareEB 폰트 사용 및 색상을 어두운 회색으로 통일 */
+        .input-box-style::placeholder {
+            font-family: 'NanumSquareEB', sans-serif;
+            color: #666; 
+            opacity: 1; 
+        }
+
+        .input-box-style:-ms-input-placeholder { 
+            font-family: 'NanumSquareEB', sans-serif;
+            color: #666;
+        }
+
+        .input-box-style::-ms-input-placeholder { 
+            font-family: 'NanumSquareEB', sans-serif;
+            color: #666;
+        }
         /* 숫자 입력 필드 스피너 제거 */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -171,7 +188,8 @@
         .purpose-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            /* ⭐ 요청: 1단계 버튼 간격 25px로 확대 ⭐ */
+            gap: 25px;
         }
         .purpose-btn {
             background-color: #f7f9fc;
@@ -354,7 +372,9 @@
                     <input type="hidden" id="consultation_type" name="entry.1546525644">
                     <input type="hidden" id="phone_full" name="entry.1402579944">
                     <input type="hidden" id="car_number_full" name="entry.1024345119"> 
-                    <input type="hidden" id="region_full" name="entry.1035204137"> 
+                    <!-- ⭐ 수정: 지역 필드 분할 매핑 ⭐ -->
+                    <input type="hidden" id="region_major_hidden" name="entry.1035204137"> 
+                    <input type="hidden" id="region_sub_hidden" name="entry.1214023940"> 
                     
                     <!-- 1. 공통 필드: 이름 -->
                     <div class="form-group">
@@ -449,8 +469,8 @@
                         <!-- 궁금한 점 (선택) 텍스트 공란 -->
                         <div class="form-group">
                             <label class="label-text" for="optional-inquiry">궁금한 점 (선택)</label>
-                            <!-- ⭐ 수정: focus-zoom 클래스 제거 및 글씨 크기는 input-box-style에서 통일 ⭐ -->
-                            <textarea id="optional-inquiry" name="entry.2000000000" rows="4" 
+                            <!-- ⭐ 수정: Google Forms 항목 ID 반영 (1592072786) ⭐ -->
+                            <textarea id="optional-inquiry" name="entry.1592072786" rows="4" 
                                 class="input-box-style" 
                                 placeholder="추가로 궁금한 점이나 상담 시 필요한 내용을 입력해주세요."
                                 onfocus="handleFocus(this)" onblur="handleBlur(this)"></textarea>
@@ -821,7 +841,9 @@
                 }
                 document.getElementById('car_number_full').value = `서울${num2}${hangul}${num4}`;
                 // 구매 전용 필드는 초기화하여 전송하지 않음
-                document.getElementById('region_full').value = '';
+                document.getElementById('region_major_hidden').value = '';
+                document.getElementById('region_sub_hidden').value = '';
+
 
             } else if (currentConsultationType === 'buying') {
                 // 4. 면허구매: 지역 통합 및 유효성 검사
@@ -834,8 +856,16 @@
                     return false;
                 }
                 
-                const fullRegion = SUB_REGIONS[majorRegion] ? `${majorRegion}_${subRegion}` : `${majorRegion}_통합`;
-                document.getElementById('region_full').value = fullRegion;
+                // ⭐ 수정: 두 개의 숨김 필드에 각각 값 설정 ⭐
+                document.getElementById('region_major_hidden').value = majorRegion;
+                
+                if (SUB_REGIONS[majorRegion]) {
+                    // 도 단위인 경우, 시/군 값을 제출
+                    document.getElementById('region_sub_hidden').value = subRegion;
+                } else {
+                    // 광역시/특별시인 경우, '해당 없음' 값을 제출하여 필드 누락 방지
+                    document.getElementById('region_sub_hidden').value = '해당 없음';
+                }
                 
                 // 판매 전용 필드는 초기화하여 전송하지 않음
                 document.getElementById('car_number_full').value = '';

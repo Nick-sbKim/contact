@@ -547,6 +547,9 @@
             const select = document.getElementById('completion-period');
             select.innerHTML = '';
             
+            // ⭐ 개선: 첫 번째 옵션 추가 (required와 연동) ⭐
+            select.add(new Option('선택', ''));
+            
             const now = new Date();
             const currentYear = now.getFullYear();
             const currentMonth = now.getMonth(); // 0-11
@@ -566,6 +569,9 @@
         function populateExpectedPeriods() {
             const select = document.getElementById('expected-period');
             select.innerHTML = '';
+            
+            // ⭐ 개선: 첫 번째 옵션 추가 (required와 연동) ⭐
+            select.add(new Option('선택', ''));
             
             const now = new Date();
             let currentMonth = now.getMonth(); // 0-11
@@ -616,6 +622,9 @@
         function populateMajorRegions() {
             const select = document.getElementById('region-major');
             
+            // ⭐ 개선: 첫 번째 옵션 추가 (required와 연동) ⭐
+            select.add(new Option('광역시/도 선택', ''));
+
             // 광역시/특별시/특별자치시 추가
             REGIONS['광역시/특별시/특별자치시'].forEach(region => {
                 select.add(new Option(region, region));
@@ -858,6 +867,7 @@
                 const majorRegion = document.getElementById('region-major').value;
                 const subRegion = document.getElementById('region-sub').value;
                 
+                // ⭐ 개선: 시/군 선택이 필요한 경우 필수 검사 ⭐
                 if (SUB_REGIONS[majorRegion] && subRegion === '') {
                     alert('사업 희망 지역의 시/군을 선택해주세요.');
                     event.preventDefault();
